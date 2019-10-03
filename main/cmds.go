@@ -105,7 +105,7 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
     var (
         intervalInSeconds = cfg.intervalInSeconds()
         numberOfProbes = cfg.numberOfProbes()
-	)
+    )
 
     var (
         numOfConsecutiveUnhealthyProbes = 0
@@ -126,13 +126,13 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 			prevState = state
 			
             // Consecutive Unhealthy probe count will need to be reset
-			numOfConsecutiveUnhealthyProbes = 0
-		}
-		
-		if state == Unhealthy {
+            numOfConsecutiveUnhealthyProbes = 0
+        }
+        
+        if state == Unhealthy {
             // Current and previous state is Unhealthy. So increment consecutive unhealthy probes
             // count, capped to "numberOfProbes" configuration
-			if numOfConsecutiveUnhealthyProbes < numberOfProbes {
+            if numOfConsecutiveUnhealthyProbes < numberOfProbes {
                 numOfConsecutiveUnhealthyProbes++
             }
         }
