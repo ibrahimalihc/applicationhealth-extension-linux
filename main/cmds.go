@@ -144,11 +144,11 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
             derivedState = Unhealthy
         }
 
-		reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
-		time.Sleep(intervalInSeconds * time.Second)
+        reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
+        time.Sleep(intervalInSeconds * time.Second)
 
-		if shutdown {
-			return "", errTerminated
-		}
-	}
+        if shutdown {
+            return "", errTerminated
+        }
+    }
 }
