@@ -102,6 +102,15 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 	var prevState HealthStatus
 	probe := NewHealthProbe(ctx, &cfg)
 
+    var (
+        intervalInSeconds = cfg.intervalInSeconds()
+        numberOfProbes = cfg.numberOfProbes()
+	)
+
+    var (
+        numOfConsecutiveUnhealthyProbes = 0
+    )
+
 	for {
 		state, err := probe.evaluate(ctx)
 		if err != nil {
@@ -115,10 +124,28 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 		if prevState != state {
 			ctx.Log("event", stateChangeLogMap[state])
 			prevState = state
+			
+            // Consecutive Unhealthy probe count will need to be reset
+			numOfConsecutiveUnhealthyProbes = 0
 		}
+		
+		if state == Unhealthy {
+            // Current and previous state is Unhealthy. So increment consecutive unhealthy probes
+            // count, capped to "numberOfProbes" configuration
+			if numOfConsecutiveUnhealthyProbes < numberOfProbes {
+                numOfConsecutiveUnhealthyProbes++
+            }
+        }
 
-		reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[state], substatusName, healthStatusToMessage[state])
-		time.Sleep(5 * time.Second)
+        // If consecutive unhealth probes match (or exceed) "numberOfProbes" config, mark current
+        // state as Unhealthy. Otherwise current state is Healthy
+        derivedState := Healthy
+        if numOfConsecutiveUnhealthyProbes == numberOfProbes {
+            derivedState = Unhealthy
+        }
+
+		reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
+		time.Sleep(intervalInSeconds * time.Second)
 
 		if shutdown {
 			return "", errTerminated

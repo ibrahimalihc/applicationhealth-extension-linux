@@ -16,6 +16,12 @@ func Test_handlerSettingsValidate(t *testing.T) {
 		protectedSettings{},
 	}.validate())
 
+    // probe settle time should be less than 120 seconds
+    require.Equal(t, errProbeSettleTimeExceedsThreshold, handlerSettings{
+        publicSettings{Protocol: "http", IntervalInSeconds: 60, NumberOfProbes: 3},
+        protectedSettings{},
+    }.validate())
+
 	require.Nil(t, handlerSettings{
 		publicSettings{Protocol: "tcp", Port: 80},
 		protectedSettings{},
@@ -30,6 +36,11 @@ func Test_handlerSettingsValidate(t *testing.T) {
 		publicSettings{Protocol: "https", RequestPath: "healthEndpoint"},
 		protectedSettings{},
 	}.validate())
+	
+    require.Nil(t, handlerSettings{
+        publicSettings{Protocol: "https", IntervalInSeconds: 30, NumberOfProbes: 3},
+        protectedSettings{},
+    }.validate())
 }
 
 func Test_toJSON_empty(t *testing.T) {
