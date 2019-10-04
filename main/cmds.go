@@ -122,16 +122,16 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 			return "", errTerminated
 		}
 
-		// Need to track value for remaining probes until application health is settled
-		// (based on "numberOfProbes" config)
-		if remainingProbesToSettleApplicationHealth > 0 {
-			remainingProbesToSettleApplicationHealth--
-		}
+        // Need to track value for remaining probes until application health is settled
+        // (based on "numberOfProbes" config)
+        if remainingProbesToSettleApplicationHealth > 0 {
+            remainingProbesToSettleApplicationHealth--
+        }
 
-		if prevState != state {
-			ctx.Log("event", stateChangeLogMap[state])
-			prevState = state
-			
+        if prevState != state {
+            ctx.Log("event", stateChangeLogMap[state])
+            prevState = state
+
             // Consecutive Unhealthy probe count will need to be reset
             numOfConsecutiveUnhealthyProbes = 0
         }
@@ -145,15 +145,15 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 
         // If application health settle time (i.e. numberOfProbes) is not passed, mark current state
         // as health returned by latest probe
-		// If consecutive unhealthy probes match (or exceed) "numberOfProbes" config, mark current
-		// state as Unhealthy
+        // If consecutive unhealthy probes match (or exceed) "numberOfProbes" config, mark current
+        // state as Unhealthy
         // Otherwise current state is Healthy
-		derivedState := Healthy
-		if remainingProbesToSettleApplicationHealth > 0 {
-			derivedState = state
-		} else if numOfConsecutiveUnhealthyProbes == numberOfProbes {
-			derivedState = Unhealthy
-		}
+        derivedState := Healthy
+        if remainingProbesToSettleApplicationHealth > 0 {
+            derivedState = state
+        } else if numOfConsecutiveUnhealthyProbes == numberOfProbes {
+            derivedState = Unhealthy
+        }
 
         reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
         time.Sleep(time.Duration(intervalInSeconds) * time.Second)
