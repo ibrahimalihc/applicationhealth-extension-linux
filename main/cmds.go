@@ -109,6 +109,7 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 
     var (
         numOfConsecutiveUnhealthyProbes = 0
+        remainingProbesToSettleApplicationHealth = numberOfProbes
     )
 
 	for {
@@ -121,6 +122,12 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
 			return "", errTerminated
 		}
 
+		// Need to track value for remaining probes until application health is settled
+		// (based on "numberOfProbes" config)
+		if remainingProbesToSettleApplicationHealth > 0 {
+			remainingProbesToSettleApplicationHealth--
+		}
+
 		if prevState != state {
 			ctx.Log("event", stateChangeLogMap[state])
 			prevState = state
@@ -130,19 +137,23 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
         }
         
         if state == Unhealthy {
-            // Current and previous state is Unhealthy. So increment consecutive unhealthy probes
-            // count, capped to "numberOfProbes" configuration
+            // Increment consecutive unhealthy probes count, capped to "numberOfProbes" configuration
             if numOfConsecutiveUnhealthyProbes < numberOfProbes {
                 numOfConsecutiveUnhealthyProbes++
             }
         }
 
-        // If consecutive unhealthy probes match (or exceed) "numberOfProbes" config, mark current
-        // state as Unhealthy. Otherwise current state is Healthy
-        derivedState := Healthy
-        if numOfConsecutiveUnhealthyProbes == numberOfProbes {
-            derivedState = Unhealthy
-        }
+        // If application health settle time (i.e. numberOfProbes) is not passed, mark current state
+        // as health returned by latest probe
+		// If consecutive unhealthy probes match (or exceed) "numberOfProbes" config, mark current
+		// state as Unhealthy
+        // Otherwise current state is Healthy
+		derivedState := Healthy
+		if remainingProbesToSettleApplicationHealth > 0 {
+			derivedState = state
+		} else if numOfConsecutiveUnhealthyProbes == numberOfProbes {
+			derivedState = Unhealthy
+		}
 
         reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
         time.Sleep(time.Duration(intervalInSeconds) * time.Second)
