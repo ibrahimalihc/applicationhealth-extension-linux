@@ -137,7 +137,7 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
             }
         }
 
-        // If consecutive unhealth probes match (or exceed) "numberOfProbes" config, mark current
+        // If consecutive unhealthy probes match (or exceed) "numberOfProbes" config, mark current
         // state as Unhealthy. Otherwise current state is Healthy
         derivedState := Healthy
         if numOfConsecutiveUnhealthyProbes == numberOfProbes {
@@ -145,7 +145,7 @@ func enable(ctx *log.Context, h vmextension.HandlerEnvironment, seqNum int) (str
         }
 
         reportStatusWithSubstatus(ctx, h, seqNum, StatusSuccess, "enable", statusMessage, healthStatusToStatusType[derivedState], substatusName, healthStatusToMessage[derivedState])
-        time.Sleep(intervalInSeconds * time.Second)
+        time.Sleep(time.Duration(intervalInSeconds) * time.Second)
 
         if shutdown {
             return "", errTerminated

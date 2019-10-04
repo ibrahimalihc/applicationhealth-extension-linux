@@ -11,7 +11,7 @@ import (
 var (
     errTcpMustNotIncludeRequestPath    = errors.New("'requestPath' cannot be specified when using 'tcp' protocol")
     errTcpConfigurationMustIncludePort = errors.New("'port' must be specified when using 'tcp' protocol")
-    errProbeSettleTimeExceedsThreshold = errors.New("Probe settling time (intervalInSeconds * numberOfProbes) cannot exceed 120 seconds")
+    errProbeSettleTimeExceedsThreshold = errors.New("Probe settle time (intervalInSeconds * numberOfProbes) cannot exceed 120 seconds")
 )
 
 // handlerSettings holds the configuration of the extension handler.
@@ -65,8 +65,8 @@ type publicSettings struct {
     Protocol          string `json:"protocol"`
     Port              int    `json:"port,int"`
     RequestPath       string `json:"requestPath"`
-    IntervalInSeconds int    `json:"intervalInSeconds"`
-    NumberOfProbes    int    `json:"numberOfProbes"`
+    IntervalInSeconds int    `json:"intervalInSeconds,int"`
+    NumberOfProbes    int    `json:"numberOfProbes,int"`
 }
 
 // protectedSettings is the type decoded and deserialized from protected
